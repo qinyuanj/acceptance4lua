@@ -172,7 +172,7 @@ function M.parse_args(args)
   return options
 end
 
-function M.main(args)
+function M.main(args, adapters)
   local options, err = M.parse_args(args or {})
   if options == nil then
     io.stderr:write(M.usage() .. "\n" .. tostring(err) .. "\n")
@@ -190,6 +190,7 @@ function M.main(args)
     end
   end
 
+  options.parallel_run = adapters and adapters.parallel_run
   local report
   report, err = mutator.run(options)
   if report == nil then

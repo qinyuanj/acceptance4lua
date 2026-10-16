@@ -198,6 +198,34 @@ function TestAcceptance4lua:test_host_can_override_step_module_name()
   lu.assertNil(generated:find('require("steps")', 1, true))
 end
 
+function TestAcceptance4lua:test_mutator_accepts_host_parallel_runner()
+  local root = common.make_temp_path("host_parallel", "")
+  local feature = root .. "/a.feature"
+  assert(common.write_file(feature, _feature()))
+  local seen = 0
+  local report, err = mutator.run({ feature = feature, work_dir = root .. "/work", level = "full",
+    workers = 2, runner_worker = "host-worker", parallel_run = function(lanes)
+      local results = {}
+      for index, lane in ipairs(lanes) do
+        seen = seen + 1
+        local input = lane.cmd:match('< "(.-)"$') or lane.cmd:match("< '(.-)'$")
+        local lines = {}
+        for line in assert(common.read_file(input)):gmatch("[^\r\n]+") do
+          local job = require("acceptance4lua.json").decode(line)
+          lines[#lines + 1] = require("acceptance4lua.json").encode_compact({ id = job.id, outcome = "test_failure" })
+        end
+        results[index] = { ok = true, output = table.concat(lines, "\n") }
+      end
+      return true, results
+    end })
+  common.remove_path(root)
+  lu.assertNil(err)
+  lu.assertEquals(seen, 2)
+  lu.assertTrue(report.summary.total > 0)
+  lu.assertEquals(report.summary.killed, report.summary.total)
+  lu.assertEquals(report.summary.errors, 0)
+end
+
 function TestAcceptance4lua:test_metadata_name_is_bounded_for_absolute_windows_feature_paths()
   local feature = "C:/Users/developer/AppData/Local/Temp/" .. string.rep("nested-feature-path/", 12) .. "a.feature"
   local first = generator.metadata_path_for("build/out_spec.lua", feature)

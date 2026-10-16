@@ -396,7 +396,7 @@ local function _run_parallel_runner_workers(jobs, mutation_by_id, options, resul
     return
   end
 
-  local ok, worker_error, lane_results = pcall(parallel_lanes.run, lanes, {
+  local ok, worker_error, lane_results = pcall(options.parallel_run or parallel_lanes.run, lanes, {
     stream = false,
     timeout = options.timeout_seconds or 600,
   })
