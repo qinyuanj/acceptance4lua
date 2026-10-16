@@ -214,7 +214,7 @@ function TestAcceptance4lua:test_metadata_name_disambiguates_colliding_slugs()
 
   lu.assertNotEquals(second, first)
   lu.assertEquals(generator.metadata_path_for("build/out_spec.lua", "a_b.feature"), first)
-  lu.assertEquals(#first:match("[^/]+$"), 69)
+  lu.assertNotNil(first:find("^build/metadata/a%-b%-feature%-%x%x%x%x%x%x%x%x%.json$"))
 
   -- 路径分隔符归一化：Windows 风格反斜杠与正斜杠得到同一名称。
   lu.assertEquals(generator.metadata_path_for("build/out_spec.lua", "a\\b.feature"), second)

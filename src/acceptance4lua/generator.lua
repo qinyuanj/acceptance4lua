@@ -95,9 +95,10 @@ end
 
 local function _metadata_name(feature_path)
   local normalized = common.normalize_path(tostring(feature_path or "feature")):lower()
-  -- Feature identities may be absolute paths. A fixed-size digest avoids Windows
-  -- MAX_PATH failures when the output already lives under a deep work directory.
-  return spec_hash.sha256(normalized) .. ".json"
+  local slug = normalized:gsub("[^a-z0-9]+", "-"):gsub("^-+", ""):gsub("-+$", "")
+  if slug == "" then slug = "feature" end
+  -- Bound the identity portion; short feature names retain their existing names.
+  return slug:sub(1, 40) .. "-" .. spec_hash.sha256(normalized):sub(1, 8) .. ".json"
 end
 
 function generator.metadata_path_for(output_path, feature_path)

@@ -86,7 +86,7 @@ LUA_PATH='src/?.lua;src/?/init.lua;;' lua path/to/generated_spec.lua
 - `gherkin-mutator` 不再将 `--feature` 默认为占位路径；该选项现为必选（所有
   实际调用方原本就已传入此选项）。
 - 生成的 metadata 文件名现在附带规范化 feature 路径的短哈希
-  （`<slug>-<8hex>.json`），折叠到同一 slug 的不同路径（如 `a_b.feature`
+  （`<slug>-<8hex>.json`，slug 最多 40 字符），折叠到同一 slug 的不同路径（如 `a_b.feature`
   与 `a/b.feature`）不再互相覆盖。外部消费方应通过
   `generator.metadata_path_for` 解析 metadata 路径，而非自行拼接文件名。
 - mutation 报告中的 `duration` 已改为 wall clock（`os.time` 秒级，与上游
