@@ -95,13 +95,9 @@ end
 
 local function _metadata_name(feature_path)
   local normalized = common.normalize_path(tostring(feature_path or "feature")):lower()
-  local slug = normalized:gsub("[^a-z0-9]+", "-"):gsub("^-+", ""):gsub("-+$", "")
-  if slug == "" then
-    slug = "feature"
-  end
-  -- 不同路径可映射到同一 slug（如 a_b.feature 与 a/b.feature 均为 a-b-feature），
-  -- 附加规范化路径的短哈希消除互相覆盖；写读两侧都走本函数，口径天然一致。
-  return slug .. "-" .. spec_hash.sha256(normalized):sub(1, 8) .. ".json"
+  -- Feature identities may be absolute paths. A fixed-size digest avoids Windows
+  -- MAX_PATH failures when the output already lives under a deep work directory.
+  return spec_hash.sha256(normalized) .. ".json"
 end
 
 function generator.metadata_path_for(output_path, feature_path)

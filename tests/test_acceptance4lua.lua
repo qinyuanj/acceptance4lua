@@ -198,6 +198,14 @@ function TestAcceptance4lua:test_host_can_override_step_module_name()
   lu.assertNil(generated:find('require("steps")', 1, true))
 end
 
+function TestAcceptance4lua:test_metadata_name_is_bounded_for_absolute_windows_feature_paths()
+  local feature = "C:/Users/developer/AppData/Local/Temp/" .. string.rep("nested-feature-path/", 12) .. "a.feature"
+  local first = generator.metadata_path_for("build/out_spec.lua", feature)
+  local filename = first:match("[^/]+$")
+  lu.assertTrue(#filename <= 69, first)
+  lu.assertNotEquals(generator.metadata_path_for("build/out_spec.lua", feature .. "x"), first)
+end
+
 function TestAcceptance4lua:test_metadata_name_disambiguates_colliding_slugs()
   -- a_b.feature 与 a/b.feature 映射到同一 slug，路径短哈希使 metadata 文件名
   -- 不再互相覆盖（issue#2）；同一输入保持确定性。
@@ -206,7 +214,7 @@ function TestAcceptance4lua:test_metadata_name_disambiguates_colliding_slugs()
 
   lu.assertNotEquals(second, first)
   lu.assertEquals(generator.metadata_path_for("build/out_spec.lua", "a_b.feature"), first)
-  lu.assertNotNil(first:find("^build/metadata/a%-b%-feature%-%x%x%x%x%x%x%x%x%.json$"))
+  lu.assertEquals(#first:match("[^/]+$"), 69)
 
   -- 路径分隔符归一化：Windows 风格反斜杠与正斜杠得到同一名称。
   lu.assertEquals(generator.metadata_path_for("build/out_spec.lua", "a\\b.feature"), second)
